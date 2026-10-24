@@ -1,0 +1,41 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generated Claude commands are in sync
+        run: |
+          node scripts/sync-claude-commands.mjs
+          git diff --exit-code -- claude/
+
+      - name: Shell syntax
+        run: sh -n install.sh
+
+      - name: JavaScript syntax
+        run: |
+          node --check logo/generate.mjs
+          node --check scripts/sync-claude-commands.mjs
+          node --check scripts/check-frontmatter.mjs
+
+      - name: Agent frontmatter
+        run: node scripts/check-frontmatter.mjs
+
+      - name: Installer dry run
+        run: |
+          TMP_HOME="$(mktemp -d)"
+          env -u XDG_CONFIG_HOME HOME="$TMP_HOME" sh install.sh --all --dry-run
