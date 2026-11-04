@@ -115,7 +115,7 @@ The plugin adds the three agents, the `/ariadne:discover`, `/ariadne:audit` and 
 ### OpenCode
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/v0.2.0/install.sh | sh -s -- --opencode
+curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/v0.3.0/install.sh | sh -s -- --opencode
 ```
 
 Or from a clone:
@@ -139,10 +139,8 @@ The curl installer downloads the tagged release named in its URL. Set `ARIADNE_R
 
 ### DeepSeek Harness (dsh)
 
-From a clone:
-
 ```sh
-./install.sh --dsh
+curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/v0.3.0/install.sh | sh -s -- --dsh
 ```
 
 This installs the three stages as [Agent Skills](https://agentskills.io) under `~/.dsh/skills/` (or `$DSH_HOME/skills/`). To scope them to one project instead, copy `skills/ariadne-*` into that project's `.agents/skills/`.
