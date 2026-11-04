@@ -7,6 +7,7 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2ea44f"></a>
   <a href="agents"><img alt="OpenCode V2" src="https://img.shields.io/badge/OpenCode-V2-11162A"></a>
   <a href="claude"><img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-D97757"></a>
+  <a href="skills"><img alt="DeepSeek Harness" src="https://img.shields.io/badge/DeepSeek%20Harness-skills-4D6BFE"></a>
   <img alt="Status: early (0.x)" src="https://img.shields.io/badge/status-early%20(0.x)-E8B04B">
 </p>
 
@@ -82,7 +83,7 @@ No code. No architecture. A requirement was extracted, an implementation artifac
 - **Contradictions stay visible.** It surfaces incompatible product models and asks you to choose — rather than picking one and moving on.
 - **Explicit anti-convergence.** It assumes the current implementation may have accidentally shaped your workflow, and asks what must remain true even if the interface changes completely.
 - **A real artifact.** Every round updates a living `.ariadne/discovery.md`, so the deliverable is tangible and the next stage has something to consume.
-- **Tool-agnostic.** Native OpenCode agents, a Claude Code plugin, Agent Skills, and a plain prompt you can paste anywhere.
+- **Tool-agnostic.** Native OpenCode agents, a Claude Code plugin, Agent Skills for DeepSeek Harness and other skill-aware tools, and a plain prompt you can paste anywhere.
 
 ## How it compares
 
@@ -129,11 +130,22 @@ cd ariadne-product-discovery
 |---|---|
 | `--opencode` | Install the three agents into `~/.config/opencode/agents/` |
 | `--claude` | Install the three slash commands into `~/.claude/commands/` (no tool limits; prefer the plugin) |
-| `--all` | Both (default) |
+| `--dsh` | Install the three skills into `~/.dsh/skills/` (no tool limits) |
+| `--all` | All three. With no tool flag, the installer does `--opencode --claude` |
 | `--dry-run` | Print what would be written, change nothing |
 | `--uninstall` | Remove Ariadne; leaves `.ariadne/` project artifacts alone |
 
 The curl installer downloads the tagged release named in its URL. Set `ARIADNE_REF=<tag>` to choose another.
+
+### DeepSeek Harness (dsh)
+
+From a clone:
+
+```sh
+./install.sh --dsh
+```
+
+This installs the three stages as [Agent Skills](https://agentskills.io) under `~/.dsh/skills/` (or `$DSH_HOME/skills/`). To scope them to one project instead, copy `skills/ariadne-*` into that project's `.agents/skills/`.
 
 ### Anything else
 
@@ -157,6 +169,8 @@ The current version technically works but the flow feels clunky.
 `/ariadne:discover <subject>` works inside an ordinary session too, but then it runs with that session's tools (see [Permissions](#permissions)).
 
 **OpenCode.** Open the agent picker, choose `ariadne-discover`, and describe what you are building.
+
+**DeepSeek Harness.** Type `/ariadne-discover` followed by what you are building, then `/ariadne-audit` and `/ariadne-architect` for the later stages.
 
 Then follow the pipeline:
 
@@ -198,7 +212,10 @@ Each agent can write only under `.ariadne/`. Discovery cannot edit code or run s
 | OpenCode agents | ✅ `permissions` block | ✅ `permissions` block |
 | Claude Code, `claude --agent ariadne:<stage>` | ✅ agent `tools:` list | ✅ plugin `PreToolUse` hook |
 | Claude Code, `/ariadne:<stage>` in an ordinary session | ❌ the session's tools | ❌ the prompt asks; nothing enforces it |
-| Installed commands, Agent Skills, pasted prompt | ❌ | ❌ the prompt asks; nothing enforces it |
+| DeepSeek Harness skills | ❌ the session's tools | ❌ the prompt asks; nothing enforces it |
+| Installed commands, other Agent Skills hosts, pasted prompt | ❌ | ❌ the prompt asks; nothing enforces it |
+
+dsh has no per-path write guard to hook into. Its agent presets compose tools, but its own docs say they are not security boundaries. Until it gains such a guard, keep the dsh session's permission mode as narrow as you are comfortable with.
 
 ## Design principles
 
