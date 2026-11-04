@@ -1,11 +1,14 @@
 #!/usr/bin/env sh
-# Ariadne installer — copies the agents into OpenCode and/or Claude Code.
+# Ariadne installer — copies the agents into OpenCode, Claude Code, and/or
+# DeepSeek Harness (dsh).
 #
-#   ./install.sh                 # install for both tools
+#   ./install.sh                 # OpenCode and Claude Code
 #   ./install.sh --opencode      # OpenCode only
 #   ./install.sh --claude        # Claude Code only
+#   ./install.sh --dsh           # DeepSeek Harness only (as Agent Skills)
+#   ./install.sh --all           # all three
 #   ./install.sh --dry-run       # show what would happen
-#   ./install.sh --uninstall     # remove Ariadne from both tools
+#   ./install.sh --uninstall     # remove Ariadne from the selected tools
 #
 # Also works without cloning (pinned to a release tag):
 #   curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/v0.2.0/install.sh | sh
@@ -21,9 +24,11 @@ REF="${ARIADNE_REF:-v0.2.0}"
 
 OPENCODE_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/agents"
 CLAUDE_DIR="$HOME/.claude/commands"
+DSH_DIR="${DSH_HOME:-$HOME/.dsh}/skills"
 
 DO_OPENCODE=0
 DO_CLAUDE=0
+DO_DSH=0
 DRY_RUN=0
 UNINSTALL=0
 TMPDIR_DL=""
@@ -42,7 +47,9 @@ Usage: ./install.sh [options]
 Options:
   --opencode     Install the OpenCode agents
   --claude       Install the Claude Code slash commands
-  --all          Install for both (default)
+  --dsh          Install the DeepSeek Harness skills
+  --all          Install for all three
+                 (default: --opencode --claude)
   --dry-run      Print what would be written, change nothing
   --uninstall    Remove Ariadne from the selected tools
   -h, --help     Show this help
@@ -53,7 +60,8 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --opencode) DO_OPENCODE=1 ;;
     --claude) DO_CLAUDE=1 ;;
-    --all) DO_OPENCODE=1; DO_CLAUDE=1 ;;
+    --dsh) DO_DSH=1 ;;
+    --all) DO_OPENCODE=1; DO_CLAUDE=1; DO_DSH=1 ;;
     --dry-run) DRY_RUN=1 ;;
     --uninstall) UNINSTALL=1 ;;
     -h|--help) usage; exit 0 ;;
@@ -62,7 +70,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-if [ "$DO_OPENCODE" -eq 0 ] && [ "$DO_CLAUDE" -eq 0 ]; then
+if [ "$DO_OPENCODE" -eq 0 ] && [ "$DO_CLAUDE" -eq 0 ] && [ "$DO_DSH" -eq 0 ]; then
   DO_OPENCODE=1
   DO_CLAUDE=1
 fi
@@ -120,6 +128,12 @@ if [ "$UNINSTALL" -eq 1 ]; then
   if [ "$DO_CLAUDE" -eq 1 ]; then
     for a in $AGENTS; do remove_file "$CLAUDE_DIR/$a.md"; done
   fi
+  if [ "$DO_DSH" -eq 1 ]; then
+    for a in $AGENTS; do
+      remove_file "$DSH_DIR/$a/SKILL.md"
+      [ "$DRY_RUN" -eq 1 ] || rmdir "$DSH_DIR/$a" 2>/dev/null || true
+    done
+  fi
   say ""
   say "Ariadne removed. Your .ariadne/ project artifacts were left untouched."
   exit 0
@@ -144,13 +158,23 @@ if [ "$DO_CLAUDE" -eq 1 ]; then
   done
 fi
 
+if [ "$DO_DSH" -eq 1 ]; then
+  [ -d "$SRC/skills" ] || die "missing $SRC/skills"
+  say "DeepSeek Harness skills -> $DSH_DIR"
+  say "  (tool limits are not enforced for skills)"
+  for a in $AGENTS; do
+    install_file "$SRC/skills/$a/SKILL.md" "$DSH_DIR/$a/SKILL.md"
+  done
+fi
+
 say ""
 if [ "$DRY_RUN" -eq 1 ]; then
   say "Dry run complete. Nothing was changed."
 else
   say "Done."
-  say "  OpenCode:    choose the 'ariadne-discover' agent, then describe what you are building."
-  say "  Claude Code: run /ariadne-discover"
+  [ "$DO_OPENCODE" -eq 0 ] || say "  OpenCode:    choose the 'ariadne-discover' agent, then describe what you are building."
+  [ "$DO_CLAUDE" -eq 0 ] || say "  Claude Code: run /ariadne-discover"
+  [ "$DO_DSH" -eq 0 ] || say "  dsh:         run /ariadne-discover"
   say ""
   say "Each stage writes a Markdown artifact under .ariadne/ in your project."
 fi

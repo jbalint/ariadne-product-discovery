@@ -26,7 +26,7 @@ claude/                 Claude Code plugin root
   .claude-plugin/       plugin.json + icon
   commands/, agents/    Generated from agents/
   hooks/                Write guard (hand-written)
-skills/                 Generated Agent Skills (SKILL.md)
+skills/                 Generated Agent Skills (SKILL.md), also the dsh port
 scripts/                Sync, validation, and guard tests
 docs/                   Examples, methodology, comparison, roadmap
 logo/                   SVG assets + generate.mjs

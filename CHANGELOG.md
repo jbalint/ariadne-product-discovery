@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- DeepSeek Harness (dsh) support: `install.sh --dsh` installs the three stages
+  as Agent Skills under `~/.dsh/skills/`, invoked as `/ariadne-discover` and so
+  on. Tool and write limits are not enforced in dsh.
+
+### Changed
+
+- `install.sh --all` now also installs for dsh. With no tool flag, the
+  installer still installs for OpenCode and Claude Code only.
+
 ## [0.2.0] — 2026-11-04
 
 ### Added
