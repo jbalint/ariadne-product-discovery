@@ -11,7 +11,7 @@
 #   ./install.sh --uninstall     # remove Ariadne from the selected tools
 #
 # Also works without cloning (pinned to a release tag):
-#   curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/v0.2.0/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/v0.3.0/install.sh | sh
 #
 # On Claude Code, prefer the plugin, which also enforces per-agent tool limits:
 #   /plugin marketplace add jbalint/ariadne-product-discovery
@@ -20,7 +20,7 @@ set -eu
 
 REPO="jbalint/ariadne-product-discovery"
 # Release tag downloaded when piped from curl. Override with ARIADNE_REF=<tag>.
-REF="${ARIADNE_REF:-v0.2.0}"
+REF="${ARIADNE_REF:-v0.3.0}"
 
 OPENCODE_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/agents"
 CLAUDE_DIR="$HOME/.claude/commands"
