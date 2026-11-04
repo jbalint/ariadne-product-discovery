@@ -7,13 +7,17 @@
 #   ./install.sh --dry-run       # show what would happen
 #   ./install.sh --uninstall     # remove Ariadne from both tools
 #
-# Also works without cloning:
-#   curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/main/install.sh | sh
+# Also works without cloning (pinned to a release tag):
+#   curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/v0.2.0/install.sh | sh
+#
+# On Claude Code, prefer the plugin, which also enforces per-agent tool limits:
+#   /plugin marketplace add jbalint/ariadne-product-discovery
 
 set -eu
 
 REPO="jbalint/ariadne-product-discovery"
-BRANCH="main"
+# Release tag downloaded when piped from curl. Override with ARIADNE_REF=<tag>.
+REF="${ARIADNE_REF:-v0.2.0}"
 
 OPENCODE_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/agents"
 CLAUDE_DIR="$HOME/.claude/commands"
@@ -75,8 +79,8 @@ else
   TMPDIR_DL=$(mktemp -d "${TMPDIR:-/tmp}/ariadne.XXXXXX")
   # shellcheck disable=SC2064
   trap "rm -rf '$TMPDIR_DL'" EXIT INT TERM
-  say "Downloading ${REPO}@${BRANCH} ..."
-  curl -fsSL "https://github.com/${REPO}/archive/refs/heads/${BRANCH}.tar.gz" \
+  say "Downloading ${REPO}@${REF} ..."
+  curl -fsSL "https://github.com/${REPO}/archive/refs/tags/${REF}.tar.gz" \
     -o "$TMPDIR_DL/repo.tar.gz" || die "download failed"
   tar -xzf "$TMPDIR_DL/repo.tar.gz" -C "$TMPDIR_DL"
   SRC=$(find "$TMPDIR_DL" -maxdepth 1 -type d -name 'ariadne-product-discovery-*' | head -n 1)
@@ -134,8 +138,9 @@ fi
 if [ "$DO_CLAUDE" -eq 1 ]; then
   [ -d "$SRC/claude/commands" ] || die "missing $SRC/claude/commands"
   say "Claude Code commands -> $CLAUDE_DIR"
+  say "  (tool limits are not enforced for installed commands; use the plugin for that)"
   for a in $AGENTS; do
-    install_file "$SRC/claude/commands/$a.md" "$CLAUDE_DIR/$a.md"
+    install_file "$SRC/claude/commands/${a#ariadne-}.md" "$CLAUDE_DIR/$a.md"
   done
 fi
 

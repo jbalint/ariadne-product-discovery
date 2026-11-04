@@ -18,13 +18,25 @@ jobs:
         with:
           node-version: 22
 
-      - name: Generated Claude commands are in sync
+      - name: Generated ports are in sync
         run: |
           node scripts/sync-claude-commands.mjs
-          git diff --exit-code -- claude/
+          git add -N claude/ skills/
+          git diff --exit-code -- claude/ skills/
 
       - name: Shell syntax
-        run: sh -n install.sh
+        run: |
+          sh -n install.sh
+          sh -n claude/hooks/guard-writes.sh
+
+      - name: Plugin manifests are valid JSON
+        run: |
+          for f in .claude-plugin/marketplace.json claude/.claude-plugin/plugin.json claude/hooks/hooks.json; do
+            node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$f" && echo "ok   $f"
+          done
+
+      - name: Write guard
+        run: sh scripts/test-guard.sh
 
       - name: JavaScript syntax
         run: |
@@ -32,7 +44,7 @@ jobs:
           node --check scripts/sync-claude-commands.mjs
           node --check scripts/check-frontmatter.mjs
 
-      - name: Agent frontmatter
+      - name: Agent frontmatter and version
         run: node scripts/check-frontmatter.mjs
 
       - name: Installer dry run

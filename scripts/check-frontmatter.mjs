@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Validates the OpenCode agent frontmatter without external dependencies.
+// Validates the OpenCode agent frontmatter, and that the release version agrees
+// across plugin.json, CHANGELOG.md, install.sh, and README.md, without external dependencies.
 // Used by CI; also useful locally: node scripts/check-frontmatter.mjs
 
 import { readFileSync, readdirSync } from "node:fs";
@@ -71,5 +72,22 @@ for (const file of files) {
 
   console.log(`ok   ${file} (${entries.length} permission rules)`);
 }
+
+const version = JSON.parse(
+  readFileSync(join(ROOT, "claude/.claude-plugin/plugin.json"), "utf8")
+).version;
+const changelog = readFileSync(join(ROOT, "CHANGELOG.md"), "utf8").match(
+  /^## \[(\d+\.\d+\.\d+)\]/m
+)?.[1];
+const installRef = readFileSync(join(ROOT, "install.sh"), "utf8").match(
+  /ARIADNE_REF:-v([\d.]+)/
+)?.[1];
+const readmeRef = readFileSync(join(ROOT, "README.md"), "utf8").match(
+  /ariadne-product-discovery\/v([\d.]+)\/install\.sh/
+)?.[1];
+if (readmeRef !== version) fail(`README.md curl URL pins v${readmeRef}, plugin.json is ${version}`);
+if (changelog !== version) fail(`CHANGELOG.md is at ${changelog}, plugin.json at ${version}`);
+if (installRef !== version) fail(`install.sh pins v${installRef}, plugin.json is ${version}`);
+console.log(`ok   version ${version}`);
 
 process.exit(failed ? 1 : 0);
