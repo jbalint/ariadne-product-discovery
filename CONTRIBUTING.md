@@ -6,11 +6,12 @@ job, so the most valuable contributions are usually not more features.
 ## What helps most
 
 1. **Real discovery transcripts.** A worked session where the agent changed your
-   understanding of your own product. Remove anything sensitive and add it to
-   `docs/examples.md`.
+   understanding of your own product. Remove anything sensitive and open a
+   **Discovery transcript** issue, or add it to `docs/examples.md`.
 2. **Failure cases.** Sessions where Ariadne converged too early, accepted an
    implementation artifact as a requirement, presented an inference as a fact,
-   or asked a low-value question. These are the most useful bug reports.
+   or asked a low-value question. These are the most useful bug reports; use
+   the **Failure case** issue form.
 3. **Ports to other tools.** Cursor rules, Windsurf workflows, or a clean
    "paste this into any chat" prompt.
 4. **Wording fixes** that make the agent's questions sharper or its guardrails
@@ -20,8 +21,13 @@ job, so the most valuable contributions are usually not more features.
 
 ```
 agents/                 OpenCode agents — the source of truth
-claude/commands/        Generated Claude Code ports
-scripts/                sync-claude-commands.mjs
+.claude-plugin/         Claude Code marketplace manifest
+claude/                 Claude Code plugin root
+  .claude-plugin/       plugin.json + icon
+  commands/, agents/    Generated from agents/
+  hooks/                Write guard (hand-written)
+skills/                 Generated Agent Skills (SKILL.md)
+scripts/                Sync, validation, and guard tests
 docs/                   Examples, methodology, comparison, roadmap
 logo/                   SVG assets + generate.mjs
 install.sh              Installer
@@ -59,13 +65,25 @@ Notes:
 - Do not mix V1 fields (`permission`, `tools`, `temperature`) into a V2 file.
   If any V2 field is present, the V1 fields are ignored.
 
-After editing an agent, regenerate the Claude Code ports:
+After editing an agent, regenerate the Claude Code commands, Claude Code
+agents, and Agent Skills:
 
 ```sh
 node scripts/sync-claude-commands.mjs
 ```
 
-Do not edit `claude/commands/` by hand — it is generated.
+Do not edit `claude/commands/`, `claude/agents/`, or `skills/` by hand — they
+are generated. The Claude agent `tools:` list is derived from the OpenCode
+`permissions` block; an `edit` rule must stay scoped to `.ariadne/**`, because
+that is what `claude/hooks/guard-writes.sh` enforces.
+
+## Releasing
+
+1. Bump `version` in `claude/.claude-plugin/plugin.json`, the `ARIADNE_REF`
+   default and URLs in `install.sh`, the curl URL in `README.md`, and add a
+   `CHANGELOG.md` entry. CI fails if any of them disagree.
+2. Tag the merge commit `vX.Y.Z` and publish a GitHub Release from the
+   changelog entry.
 
 ## Changing the logo
 
@@ -87,6 +105,7 @@ rsvg-convert -w 512 -h 512 logo/ariadne-icon.svg -o /tmp/icon.png
 - If you change an agent's behavior, include a before/after transcript.
 - If you change permissions, explain why the new access is required by the job.
 - Run `node scripts/sync-claude-commands.mjs` and commit the result.
+- If you touch the write guard, run `sh scripts/test-guard.sh`.
 
 ## License
 

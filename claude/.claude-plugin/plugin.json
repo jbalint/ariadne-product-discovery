@@ -1,0 +1,10 @@
+{
+  "name": "ariadne",
+  "version": "0.2.0",
+  "description": "Product discovery before code: interview, audit, and plan agents that keep your AI coding agent faithful to your intent instead of the current codebase.",
+  "author": { "name": "Jess Balint" },
+  "homepage": "https://github.com/jbalint/ariadne-product-discovery",
+  "repository": "https://github.com/jbalint/ariadne-product-discovery",
+  "license": "MIT",
+  "keywords": ["product-discovery", "requirements", "spec-driven-development", "product-management", "planning"]
+}

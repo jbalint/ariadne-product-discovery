@@ -6,7 +6,7 @@ page positions it against the tools it is most often confused with.
 
 ## Capability matrix
 
-| | **Ariadne** | Requirements-clarity skill | Spec-driven kits (spec-kit, BMAD) | Socraticode | Plain coding agent |
+| | **Ariadne** | Requirements-clarity skill | Spec-driven kits (Spec Kit, Kiro, BMAD) | Socraticode | Plain coding agent |
 |---|---|---|---|---|---|
 | Primary job | Elicit product intent | Score requirement completeness | Structure the delivery process | Code intelligence via MCP | Write code |
 | Starts before code | ✅ | ⚠️ after a request exists | ✅ | ❌ | ❌ |
@@ -33,7 +33,7 @@ keeps unresolved items unresolved.
 They compose well: use Ariadne to establish intent, then a completeness pass if
 your process needs one.
 
-## Spec-driven kits (spec-kit, BMAD, and similar)
+## Spec-driven development (GitHub Spec Kit, Kiro specs, BMAD Method)
 
 These are excellent at what happens **after** intent exists: templates,
 specifications, task breakdowns, and multi-agent delivery workflows. They assume

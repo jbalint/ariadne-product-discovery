@@ -1,0 +1,15 @@
+{
+  "name": "ariadne-product-discovery",
+  "owner": {
+    "name": "Jess Balint"
+  },
+  "description": "Ariadne: product-discovery agents that run before code.",
+  "plugins": [
+    {
+      "name": "ariadne",
+      "source": "./claude",
+      "description": "Product discovery before code: interview, audit, and plan agents for Claude Code.",
+      "category": "productivity"
+    }
+  ]
+}

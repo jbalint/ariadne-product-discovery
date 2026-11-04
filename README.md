@@ -6,8 +6,8 @@
   <a href=".github/workflows/validate.yml"><img alt="CI" src="https://github.com/jbalint/ariadne-product-discovery/actions/workflows/validate.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2ea44f"></a>
   <a href="agents"><img alt="OpenCode V2" src="https://img.shields.io/badge/OpenCode-V2-11162A"></a>
-  <a href="claude/commands"><img alt="Claude Code" src="https://img.shields.io/badge/Claude%20Code-commands-D97757"></a>
-  <img alt="3 agents" src="https://img.shields.io/badge/agents-3-E8B04B">
+  <a href="claude"><img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-D97757"></a>
+  <img alt="Status: early (0.x)" src="https://img.shields.io/badge/status-early%20(0.x)-E8B04B">
 </p>
 
 <p align="center">
@@ -15,6 +15,8 @@
   Ariadne is the product-discovery front-end that runs before code, so the agent stays
   faithful to your intent instead of treating the current codebase as the spec.
 </p>
+
+> **Status: early (0.x).** The prompts and artifact format may change between minor versions. Failure reports are very welcome.
 
 ---
 
@@ -80,74 +82,87 @@ No code. No architecture. A requirement was extracted, an implementation artifac
 - **Contradictions stay visible.** It surfaces incompatible product models and asks you to choose — rather than picking one and moving on.
 - **Explicit anti-convergence.** It assumes the current implementation may have accidentally shaped your workflow, and asks what must remain true even if the interface changes completely.
 - **A real artifact.** Every round updates a living `.ariadne/discovery.md`, so the deliverable is tangible and the next stage has something to consume.
-- **Tool-agnostic.** Native OpenCode agents, Claude Code slash commands, and a plain prompt you can paste anywhere.
+- **Tool-agnostic.** Native OpenCode agents, a Claude Code plugin, Agent Skills, and a plain prompt you can paste anywhere.
 
 ## How it compares
 
-| | **Ariadne** | Requirements-clarity skill | "Write me a PRD" prompt |
-|---|---|---|---|
-| Runs before code, from intent | ✅ | ⚠️ after a request exists | ⚠️ |
-| Interviews instead of generating | ✅ | ✅ | ❌ |
-| Distinguishes observed / stated / inferred / uncertain / conflicting | ✅ | ❌ | ❌ |
-| Surfaces contradictions instead of resolving them | ✅ | ❌ | ❌ |
-| Resists converging on the current implementation | ✅ | ❌ | ❌ |
-| Produces a living discovery artifact | ✅ | ✅ PRD | ⚠️ |
-| Feeds a downstream planning agent | ✅ | ⚠️ | ⚠️ |
-| Scope | product intent | requirement completeness | one-shot document |
+Spec-driven development tools such as [GitHub Spec Kit](https://github.com/github/spec-kit), [Kiro](https://kiro.dev) specs, and the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) formalize intent you already have into specs and tasks. Ariadne runs **before** them: it finds out what the intent is, so the spec they formalize is yours and not a rationalization of the current code.
+
+| | **Ariadne** | Spec Kit / Kiro specs | BMAD Method | "Write me a PRD" prompt |
+|---|---|---|---|---|
+| Primary job | find out intent | formalize intent into spec → plan → tasks | agile multi-agent delivery | one-shot document |
+| Runs before a spec exists | ✅ | ⚠️ assumes you can state it | ⚠️ analyst phase | ⚠️ |
+| Interviews instead of generating | ✅ | ⚠️ clarify step | ⚠️ | ❌ |
+| Tags observed / stated / inferred / uncertain / conflicting | ✅ | ❌ | ❌ | ❌ |
+| Surfaces contradictions instead of resolving them | ✅ | ⚠️ open questions | ❌ | ❌ |
+| Resists converging on the current implementation | ✅ | ❌ | ❌ | ❌ |
+| Produces a living artifact a spec tool can consume | ✅ | ✅ spec | ✅ PRD | ⚠️ |
+
+See [`docs/comparison.md`](docs/comparison.md) for the longer version.
 
 ## Install
+
+### Claude Code (plugin)
+
+```
+/plugin marketplace add jbalint/ariadne-product-discovery
+/plugin install ariadne@ariadne-product-discovery
+```
+
+The plugin adds the three agents, the `/ariadne:discover`, `/ariadne:audit` and `/ariadne:architect` commands, and a hook that keeps Ariadne agents from writing outside `.ariadne/`.
+
+### OpenCode
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/v0.2.0/install.sh | sh -s -- --opencode
+```
+
+Or from a clone:
 
 ```sh
 git clone https://github.com/jbalint/ariadne-product-discovery.git
 cd ariadne-product-discovery
-./install.sh              # both tools
-```
-
-Or without cloning:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/jbalint/ariadne-product-discovery/main/install.sh | sh -s -- --opencode
+./install.sh --opencode
 ```
 
 | Flag | Effect |
 |---|---|
 | `--opencode` | Install the three agents into `~/.config/opencode/agents/` |
-| `--claude` | Install the three slash commands into `~/.claude/commands/` |
+| `--claude` | Install the three slash commands into `~/.claude/commands/` (no tool limits; prefer the plugin) |
 | `--all` | Both (default) |
 | `--dry-run` | Print what would be written, change nothing |
 | `--uninstall` | Remove Ariadne; leaves `.ariadne/` project artifacts alone |
 
-<details>
-<summary>Manual installation</summary>
+The curl installer downloads the tagged release named in its URL. Set `ARIADNE_REF=<tag>` to choose another.
 
-**OpenCode** — copy `agents/*.md` into `~/.config/opencode/agents/` (V2) or `~/.config/opencode/agent/` (V1-compatible).
+### Anything else
 
-**Claude Code** — copy `claude/commands/*.md` into `~/.claude/commands/`.
-
-**Anything else** (Cursor, Windsurf, a chat window) — copy the body of the relevant file in `agents/`, drop the YAML frontmatter, and use it as the system prompt, custom mode, or rule.
-
-</details>
+[`skills/`](skills) holds each stage as an [Agent Skill](https://agentskills.io) (`SKILL.md`), for tools that load skills. For anything else (Cursor, Windsurf, a chat window), copy the body of the relevant file in `agents/`, drop the YAML frontmatter, and use it as the system prompt, custom mode, or rule.
 
 ## Quick start
 
-**OpenCode** — open the agent picker, choose `ariadne-discover`, and describe what you are building:
+**Claude Code.** Run the stage as the session's agent, so its tool limits apply:
+
+```sh
+claude --agent ariadne:discover
+```
+
+Then describe what you are building:
 
 ```
 I'm building a CLI that turns a folder of screenshots into a design spec.
 The current version technically works but the flow feels clunky.
 ```
 
-**Claude Code**:
+`/ariadne:discover <subject>` works inside an ordinary session too, but then it runs with that session's tools (see [Permissions](#permissions)).
 
-```
-/ariadne-discover a folder-of-screenshots to design-spec CLI
-```
+**OpenCode.** Open the agent picker, choose `ariadne-discover`, and describe what you are building.
 
 Then follow the pipeline:
 
-```
-/ariadne-audit      # once discovery.md reflects your intent
-/ariadne-architect  # once the idea has survived the audit
+```sh
+claude --agent ariadne:audit      # once discovery.md reflects your intent
+claude --agent ariadne:architect  # once the idea has survived the audit
 ```
 
 ## How it works
@@ -174,7 +189,16 @@ When evidence conflicts, it uses a fixed priority: **your clarified intent** →
 | `ariadne-audit` | primary | `.ariadne/audit.md` | Prior art, novelty map, risks, alternatives |
 | `ariadne-architect` | primary | `.ariadne/plan.md` | Repo-aware plan: slices, tasks, acceptance criteria |
 
-Each agent has write access to its own `.ariadne/` artifact and nothing else. Discovery cannot edit code or run shell commands. The architect can inspect the repo but must ask before running shell commands.
+### Permissions
+
+Each agent can write only under `.ariadne/`. Discovery cannot edit code or run shell commands. The architect can inspect the repo but must ask before running shell commands.
+
+| | Tool limits | Writes limited to `.ariadne/` |
+|---|---|---|
+| OpenCode agents | ✅ `permissions` block | ✅ `permissions` block |
+| Claude Code, `claude --agent ariadne:<stage>` | ✅ agent `tools:` list | ✅ plugin `PreToolUse` hook |
+| Claude Code, `/ariadne:<stage>` in an ordinary session | ❌ the session's tools | ❌ the prompt asks; nothing enforces it |
+| Installed commands, Agent Skills, pasted prompt | ❌ | ❌ the prompt asks; nothing enforces it |
 
 ## Design principles
 
@@ -190,10 +214,12 @@ Ariadne is built on a few opinions worth stating plainly:
 
 - [x] Three-stage pipeline with per-stage artifacts
 - [x] OpenCode agents + Claude Code commands
+- [x] Claude Code plugin with enforced tool and write limits
+- [x] Agent Skills port
 - [ ] Session memory across discovery rounds
 - [ ] Structured YAML/JSON output for downstream agents
 - [ ] Issue-tracker import (seed discovery from existing tickets)
-- [ ] Cursor rules and additional tool ports
+- [ ] Cursor rules and other ports beyond Agent Skills
 - [ ] Example gallery from real sessions
 
 See [`docs/roadmap.md`](docs/roadmap.md) for details.
@@ -207,7 +233,7 @@ See [`docs/roadmap.md`](docs/roadmap.md) for details.
 
 ## Contributing
 
-Issues and pull requests are welcome. The most useful contributions are **real discovery transcripts** (with anything sensitive removed) and **failure cases** where the agent converged too early or accepted an implementation artifact as a requirement. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Issues and pull requests are welcome. The most useful contributions are **real discovery transcripts** (with anything sensitive removed) and **failure cases** where the agent converged too early or accepted an implementation artifact as a requirement. Both have [issue forms](https://github.com/jbalint/ariadne-product-discovery/issues/new/choose). See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## License
 
